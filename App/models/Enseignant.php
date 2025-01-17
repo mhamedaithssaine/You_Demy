@@ -21,7 +21,7 @@ class Enseignant extends User {
 
                   }
         
-            public function validateEnseignant( $id) {
+            public function validateEnseignant(int  $id) {
                 return $this->updateRecord($this->table, ['status' => 'active'], $id);
             }
         
