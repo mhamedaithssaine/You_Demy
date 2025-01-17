@@ -1,6 +1,50 @@
 <?php 
 require 'vendor/autoload.php';
 
+use App\Models\Category;
+use App\Models\User;
+use App\Models\Tag;
+use App\Models\Cours;
+
+$category = new Category();
+$categories = $category->selectAllCategory();
+
+$user = new User();
+$authors = $user->selectAllUsers();
+
+$tag = new Tag();
+$tags = $tag->selectAllTags();
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $title = $_POST['title'];
+    $description = $_POST['description'];
+    $contenu = $_POST['contenu'];
+    $contenu_video = $_POST['contenu_video'] ?? null;
+    $contenu_document = $_POST['contenu_document'] ?? null;
+    $category_id = $_POST['category_id'];
+    $scheduled_date = $_POST['scheduled_date'];
+
+    $cours = new Cours();
+
+    $cours_id = $cours->addCours([
+        'title' => $title,
+        'description' => $description,
+        'content' => $contenu === 'Document' ? $contenu_document : null,
+        'content_vedio' => $contenu === 'Video' ? $contenu_video : null,
+        'created_at' => $scheduled_date,
+        'category_id' => $category_id,
+       
+    ]);
+
+    if ($cours_id && isset($_POST['tag_id'])) {
+        foreach ($_POST['tag_id'] as $tag_id) {
+            $cours->addTag($cours_id, $tag_id);
+        }
+    }
+
+    header('Location: enseignat.php');
+}
+
 
 ?>
 
@@ -118,61 +162,73 @@ require 'vendor/autoload.php';
                 <!-- Other sections (initially hidden) -->
             <section id="validation" class="section hidden">
                  <!-- add content -->
-                 <h2 class="text-xl font-semibold mb-4">Ajouter Cours </h2>
- <form action="../app/Enseignant/manager_cours.php" method="POST" class="mb-4">
-
-    <div>
-        <label for="title">Title</label>
-        <input class="border p-2 mb-2 w-full" type="text" id="title" name="title" placeholder="Enter title de cours" required>
-    </div>
-    <div>
-        <label for="description">Description</label>
-        <textarea class="border p-2 mb-2 w-full" name="description" rows="4" placeholder="Enter description de cours"  required></textarea>
-    </div>
-    <div>
-        <label for="contenu">Contenu</label>
-        <select id="contenu" name="contenu" required>
-            <option value="">--choisi Contenu de cours--</option>
-            <option value="Video">Video</option>
-            <option value="Document">Document</option>
-        </select>
-    </div>
-    <div id="video">
-        <label for="contenu_video">Video URL</label>
-        <input class="border p-2 mb-2 w-full" type="url" id="content_vedio" name="contenu_video" placeholder="Enter video URL">
-    </div>
-    <div id="document" style="display:none;">
-        <label for="contenu_document"> Document cours</label>
-        <textarea class="border p-2 mb-2 w-full" id="contenu_document" name="content" rows="4" placeholder="Enter course document"></textarea>
-    </div>
-           <div>
-                <label for="category_id">Catégorie</label>
-                <select class="border p-2 mb-2 w-full" id="category_id" name="category_id" required>
-                    <option value="" disabled selected>Choisir une catégorie</option>
-                    <?php foreach ($categories as $category): ?>
-                        <option value="<?= $category['id'] ?>"><?= htmlspecialchars($category['name']) ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-    <div class="tags-container">
-                <label style="color:black;">Tags</label>
-                <?php foreach ($tags as $tag): ?>
-                    <div>
-                <table>
-                       <td> <label for="tag_<?= $tag['id'] ?>"><?= htmlspecialchars($tag['name']) ?></label></td>
-                       <td> <input type="checkbox" id="tag_<?= $tag['id'] ?>" name="tags[]" value="<?= $tag['id'] ?>"></td>
-                       
-                </table>
+                 <div class="card">
+                    <div class="card-header">
+                        <h2>Add Cours</h2>
                     </div>
-                <?php endforeach; ?>
+                    <div class="card-body">
+                        <form method="post">
+                            <div class="form-group">
+                                <label for="title">Title:</label>
+                                <input type="text" class="form-control" id="title" name="title" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="description">Description:</label>
+                                <textarea class="form-control" id="description" name="description" rows="5" required></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="contenu">Contenu:</label>
+                                <select class="form-control" id="contenu" name="contenu" required>
+                                    <option value="">--choisi Contenu de cours--</option>
+                                    <option value="Video">Video</option>
+                                    <option value="Document">Document</option>
+                                </select>
+                            </div>
+                            <div id="video" style="display:none;">
+                                <div class="form-group">
+                                    <label for="contenu_video">Video URL:</label>
+                                    <input type="text" class="form-control" id="contenu_video" name="contenu_video">
+                                </div>
+                            </div>
+                            <div id="document" style="display:none;">
+                                <div class="form-group">
+                                    <label for="contenu_document">Document cours:</label>
+                                    <textarea class="form-control" id="contenu_document" name="contenu_document" rows="5"></textarea>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="category_id">Category:</label>
+                                <select class="form-control" id="category_id" name="category_id" required>
+                                    <?php foreach ($categories as $cat): ?>
+                                        <option value="<?= $cat['id'] ?>"><?= htmlspecialchars($cat['name']) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Tags :</label>
+                                <div class="form-check">
+                                    <?php foreach ($tags as $tag): ?>
+                                        <div class="mb-2">
+                                            <input class="form-check-input" type="checkbox"
+                                                   id="tag_<?php echo $tag['id']; ?>"
+                                                   name="tag_id[]"
+                                                   value="<?php echo $tag['id']; ?>">
+                                            <label class="form-check-label" for="tag<?php echo $tag['id']; ?>">
+                                                <?php echo htmlspecialchars($tag['name']); ?>
+                                            </label>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="scheduled_date">Scheduled Date:</label>
+                                <input type="datetime-local" class="form-control" id="scheduled_date" name="scheduled_date">
+                            </div>
+                           
+                            <button type="submit" class="btn btn-primary">Add Cours</button>
+                        </form>
+                    </div>
                 </div>
-    
-    <div>
-        <label for="scheduled_date">Scheduled Date</label>
-        <input class="border p-2 mb-2 w-full" type="date" id="scheduled_date" name="created_at" required>
-    </div>
-    <button class="bg-gray-500 text-white p-2 popup-close" type="submit" name="action" value="create">Ajouter Course</button>
-</form>
                 </section>
 
                 <section id="content" class="section hidden">
@@ -228,6 +284,20 @@ require 'vendor/autoload.php';
         });
 
        
+    document.getElementById('contenu').addEventListener('change', function() {
+    const videoDiv = document.getElementById('video');
+    const documentDiv = document.getElementById('document');
+    if (this.value === 'Video') {
+        videoDiv.style.display = 'block';
+        documentDiv.style.display = 'none';
+    } else if (this.value === 'Document') {
+        videoDiv.style.display = 'none';
+        documentDiv.style.display = 'block';
+    } else {
+        videoDiv.style.display = 'none';
+        documentDiv.style.display = 'none';
+    }
+});
 
       
     </script>
