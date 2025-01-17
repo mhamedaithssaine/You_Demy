@@ -1,3 +1,49 @@
+<?php 
+require '../../vendor/autoload.php';
+  use App\Models\User;
+  $User = new User();
+
+if ($_SERVER["REQUEST_METHOD"]=="POST" ){
+    $fullname=htmlspecialchars($_POST['fullname']);
+    $email=htmlspecialchars($_POST['email']);
+    $phone=htmlspecialchars($_POST['phone']);
+    $password=htmlspecialchars($_POST['password']);
+    $bio=htmlspecialchars($_POST['bio']);
+    $profil_img_url=htmlspecialchars($_POST['profil_img_url']);
+    $role=htmlspecialchars($_POST['role']);
+    $password_hach = password_hash($password,PASSWORD_DEFAULT);
+    
+    if($role === 'enseignant'){
+        $status = 'suspensed';
+    }else {
+        $status = 'active';
+    }
+    $data = [
+        'fullname' => $fullname,
+        'email' => $email,
+        'phone' => $phone,
+        'password' => $password_hach,
+        'bio' => $bio,
+        'profil_img_url' => $profil_img_url,
+        'role' => $role,
+        'status' => $status
+    ];
+   
+    if($User->addusers($data)){
+        header('location: login.php');
+        exit();
+    }
+    
+
+
+}   
+
+
+
+
+
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,7 +56,7 @@
 <body class="bg-gray-50 flex items-center justify-center min-h-screen">
     <div class="bg-white p-8 rounded-xl border border-gray-200 shadow-lg w-full max-w-md">
         <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">Register</h2>
-        <form method="POST" action="../components/auth/registration.php" class="space-y-4">
+        <form method="POST" action="" class="space-y-4">
             <div>
                 <label for="fullname" class="block text-sm font-medium text-gray-700">Full Name</label>
                 <input type="text" id="fullname" name="fullname" placeholder="John Doe" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" required>
