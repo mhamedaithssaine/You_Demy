@@ -1,11 +1,11 @@
 <?php
-namespace Database;
+namespace App\Database;
 
 use PDO;
 use Dotenv\Dotenv;
 use PDOException;
 
-class conection {
+class Connection {
 
     private static $conn;
 
@@ -17,13 +17,15 @@ class conection {
         $dbname = $_ENV['db_name'];
         $username = $_ENV['username'];
         $password = $_ENV['password'];
-
+        // echo "Database: $dbname<br>";
+        // echo "Username: $username<br>";
+        // echo "Password: $password<br>";
         try {
             self::$conn = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
             self::$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            echo "success  '$dbname'.";
+            // echo "success  '$dbname'.";
         } catch (PDOException $e) {
-            echo "Connection error: " . $e->getMessage();
+            die ("Connection error: " . $e->getMessage());
         }
     }
 
