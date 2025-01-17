@@ -2,15 +2,12 @@
 require 'vendor/autoload.php';
 
 use App\Models\Category;
-use App\Models\User;
+
 use App\Models\Tag;
 use App\Models\Cours;
 
 $category = new Category();
 $categories = $category->selectAllCategory();
-
-$user = new User();
-$authors = $user->selectAllUsers();
 
 $tag = new Tag();
 $tags = $tag->selectAllTags();
@@ -44,6 +41,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     header('Location: enseignat.php');
 }
+
+
+
+//affiche le cours 
+include 'app/Enseignant/displayCours.php';
+
+
+
+
+
+
+
+
+
 
 
 ?>
@@ -160,81 +171,157 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </section>
 
                 <!-- Other sections (initially hidden) -->
-            <section id="validation" class="section hidden">
-                 <!-- add content -->
-                 <div class="card">
-                    <div class="card-header">
-                        <h2>Add Cours</h2>
-                    </div>
-                    <div class="card-body">
-                        <form method="post">
-                            <div class="form-group">
-                                <label for="title">Title:</label>
-                                <input type="text" class="form-control" id="title" name="title" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="description">Description:</label>
-                                <textarea class="form-control" id="description" name="description" rows="5" required></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label for="contenu">Contenu:</label>
-                                <select class="form-control" id="contenu" name="contenu" required>
-                                    <option value="">--choisi Contenu de cours--</option>
-                                    <option value="Video">Video</option>
-                                    <option value="Document">Document</option>
-                                </select>
-                            </div>
-                            <div id="video" style="display:none;">
-                                <div class="form-group">
-                                    <label for="contenu_video">Video URL:</label>
-                                    <input type="text" class="form-control" id="contenu_video" name="contenu_video">
-                                </div>
-                            </div>
-                            <div id="document" style="display:none;">
-                                <div class="form-group">
-                                    <label for="contenu_document">Document cours:</label>
-                                    <textarea class="form-control" id="contenu_document" name="contenu_document" rows="5"></textarea>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="category_id">Category:</label>
-                                <select class="form-control" id="category_id" name="category_id" required>
-                                    <?php foreach ($categories as $cat): ?>
-                                        <option value="<?= $cat['id'] ?>"><?= htmlspecialchars($cat['name']) ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Tags :</label>
-                                <div class="form-check">
-                                    <?php foreach ($tags as $tag): ?>
-                                        <div class="mb-2">
-                                            <input class="form-check-input" type="checkbox"
-                                                   id="tag_<?php echo $tag['id']; ?>"
-                                                   name="tag_id[]"
-                                                   value="<?php echo $tag['id']; ?>">
-                                            <label class="form-check-label" for="tag<?php echo $tag['id']; ?>">
-                                                <?php echo htmlspecialchars($tag['name']); ?>
-                                            </label>
-                                        </div>
-                                    <?php endforeach; ?>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="scheduled_date">Scheduled Date:</label>
-                                <input type="datetime-local" class="form-control" id="scheduled_date" name="scheduled_date">
-                            </div>
-                           
-                            <button type="submit" class="btn btn-primary">Add Cours</button>
-                        </form>
-                    </div>
+    <section id="validation" class="section hidden">
+             <!-- add content -->
+        <div class="card">
+                <div class="card-header">
+                     <h1>Ajouter un cours </h1>
                 </div>
-                </section>
+            <div class="card-body p-6 bg-white rounded-lg shadow-md">
+                <form method="post">
+                        <div class="mb-4">
+                            <label for="title" class="block text-gray-700 text-sm font-bold mb-2">Title:</label>
+                            <input type="text" id="title" name="title" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                        </div>
+                        <div class="mb-4">
+                            <label for="description" class="block text-gray-700 text-sm font-bold mb-2">Description:</label>
+                            <textarea id="description" name="description" rows="5" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required></textarea>
+                        </div>
+                        <div class="mb-4">
+                            <label for="contenu" class="block text-gray-700 text-sm font-bold mb-2">Contenu:</label>
+                            <select id="contenu" name="contenu" class="block appearance-none w-full bg-white border border-gray-400 hover:border-gray-500 px-4 py-2 pr-8 rounded shadow leading-tight focus:outline-none focus:shadow-outline" required>
+                                <option value="">--choisi Contenu de cours--</option>
+                                <option value="Video">Video</option>
+                                <option value="Document">Document</option>
+                            </select>
+                        </div>
+                        <div id="video" class="hidden mb-4">
+                            <div>
+                                <label for="contenu_video" class="block text-gray-700 text-sm font-bold mb-2">Video URL:</label>
+                                <input type="text" id="contenu_video" name="contenu_video" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                            </div>
+                        </div>
+                        <div id="document" class="hidden mb-4">
+                            <div>
+                                <label for="contenu_document" class="block text-gray-700 text-sm font-bold mb-2">Document cours:</label>
+                                <textarea id="contenu_document" name="contenu_document" rows="5" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"></textarea>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label for="category_id" class="block text-gray-700 text-sm font-bold mb-2">Category:</label>
+                            <select id="category_id" name="category_id" class="block appearance-none w-full bg-white border border-gray-400 hover:border-gray-500 px-4 py-2 pr-8 rounded shadow leading-tight focus:outline-none focus:shadow-outline" required>
+                                <?php foreach ($categories as $cat): ?>
+                                    <option value="<?= $cat['id'] ?>"><?= htmlspecialchars($cat['name']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Tags:</label>
+                            <div class="flex flex-wrap">
+                                <?php foreach ($tags as $tag): ?>
+                                    <div class="mb-2 mr-2">
+                                        <input type="checkbox" id="tag_<?php echo $tag['id']; ?>" name="tag_id[]" value="<?php echo $tag['id']; ?>" class="form-checkbox h-4 w-4 text-blue-600">
+                                        <label for="tag_<?php echo $tag['id']; ?>" class="ml-2 text-gray-700"><?php echo htmlspecialchars($tag['name']); ?></label>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label for="scheduled_date" class="block text-gray-700 text-sm font-bold mb-2">Scheduled Date:</label>
+                            <input type="datetime-local" id="scheduled_date" name="scheduled_date" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Add Cours</button>
+                        </div>
+                </form>
+            </div>
 
-                <section id="content" class="section hidden">
+        </div>
+    </section>
+
+    <section id="content" class="section hidden">
                     <!-- Content management -->
-                    <h2 class="text-xl font-semibold mb-4">Gestion des contenus</h2>
-                   
+                    <h2 class="text-xl font-semibold mb-4">Les cours</h2>
+                    <div class="card shadow mb-4 bg-white rounded-lg shadow-md">
+                        <div class="card-body p-6">
+                            <div class="table-responsive">
+                                <table class="table table-bordered w-full" id="dataTable" width="100%" cellspacing="0">
+                                    <thead>
+                                        <tr>
+                                            <th class="px-4 py-2">Title</th>
+                                            <th class="px-4 py-2">Category</th>
+                                            <th class="px-4 py-2">Content Type</th>
+                                            <th class="px-4 py-2">Tags</th>
+                                            <th class="px-4 py-2">Created At</th>
+                                            <th class="px-4 py-2">Status</th>
+                                            <th class="px-4 py-2">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tfoot>
+                                        <tr>
+                                            <th class="px-4 py-2">Title</th>
+                                            <th class="px-4 py-2">Category</th>
+                                            <th class="px-4 py-2">Content Type</th>
+                                            <th class="px-4 py-2">Tags</th>
+                                            <th class="px-4 py-2">Created At</th>
+                                            <th class="px-4 py-2">Status</th>
+                                            <th class="px-4 py-2">Actions</th>
+                                        </tr>
+                                    </tfoot>
+                                    <tbody>
+                                    <?php if (isset($courses) && !empty($courses)): ?>
+                                        <?php foreach ($courses as $course): ?>
+                                            <tr>
+                                                <td class="px-4 py-2">
+                                                    <?= htmlspecialchars($course['title']) ?>
+                                                </td>
+                                                <td class="px-4 py-2">
+                                                    <?= htmlspecialchars($course['category_name']) ?>
+                                                </td>
+                                                <td class="px-4 py-2">
+                                                    <?= htmlspecialchars($course['content_type']) ?>
+                                                </td>
+                                                <td class="px-4 py-2">
+                                                    <?php
+                                                    if ($course['tag_names']) {
+                                                        $tags = explode(',', $course['tag_names']);
+                                                        foreach ($tags as $tag) {
+                                                            echo '<span class="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded">' . htmlspecialchars($tag) . '</span>';
+                                                        }
+                                                    }
+                                                    ?>
+                                                </td>
+                                                <td class="px-4 py-2" data-order="<?= strtotime($course['created_at']) ?>">
+                                                    <?= date('M d, Y H:i', strtotime($course['created_at'])) ?>
+                                                </td>
+                                                <td class="px-4 py-2">
+                                                    <?= htmlspecialchars($course['status']) ?>
+                                                </td>
+                                                <td class="px-4 py-2">
+                                                    <form method="post" action="update-cours.php?id=<?= $course['id'] ?>" style="display:inline;">
+                                                        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                                            <i class="fas fa-edit"></i> Update
+                                                        </button>
+                                                    </form>
+                                                    <form method="post" action="delete-cours.php" style="display:inline;">
+                                                        <input type="hidden" name="id" value="<?= $course['id'] ?>">
+                                                        <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                                                            <i class="fas fa-trash"></i> Delete
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <tr>
+                                            <td colspan="7" class="text-center">No courses available.</td>
+                                        </tr>
+                                    <?php endif; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 </section>
 
 
