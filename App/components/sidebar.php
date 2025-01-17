@@ -1,4 +1,5 @@
-<aside class="hidden lg:flex lg:flex-col lg:w-72 lg:fixed lg:inset-y-0 bg-white border-r border-gray-200">
+<!-- app/components/sidebar.php -->
+<aside class="fixed inset-y-0 left-0 w-72 bg-white border-r border-gray-200">
     <!-- Logo -->
     <div class="flex items-center h-16 px-6 border-b border-gray-200 bg-white">
         <div class="flex items-center gap-2">
@@ -18,19 +19,20 @@
                     <i class="fas fa-chart-line w-5 h-5"></i>
                     <span class="ml-3">Dashboard</span>
                 </a>
-                <a href="#" class="flex items-center px-3 py-2 text-sm font-medium rounded-lg bg-indigo-50 text-indigo-600">
-                    <i class="fas fa-book w-5 h-5"></i>
-                    <span class="ml-3">My Courses</span>
-                </a>
-                <a href="#" class="flex items-center px-3 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-50">
-                    <i class="fas fa-users w-5 h-5"></i>
-                    <span class="ml-3">Students</span>
-                </a>
             </div>
         </div>
 
-        <!-- Rest of the sidebar same as teacher dashboard -->
-        <!-- ... -->
+       
+
+        <div>
+            <h3 class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Statistics</h3>
+            <div class="mt-4 space-y-1">
+                <a href="#" class="flex items-center px-3 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-50">
+                    <i class="fas fa-chart-bar w-5 h-5"></i>
+                    <span class="ml-3">Global Statistics</span>
+                </a>
+            </div>
+        </div>
     </nav>
 
     <!-- Profile Section -->
@@ -41,6 +43,9 @@
                 <p class="text-sm font-medium text-gray-900 truncate">John Doe</p>
                 <p class="text-xs text-gray-500 truncate">Web Development</p>
             </div>
+            <button class="bg-red-500 text-white px-3 py-1 rounded-lg text-sm font-medium hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                Logout
+            </button>
         </div>
     </div>
 </aside>
