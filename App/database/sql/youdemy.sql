@@ -14,12 +14,18 @@ CREATE TABLE IF NOT EXISTS `users` (
   `password` VARCHAR(200) NOT NULL,
   `bio` TEXT,
   `profil_img_url` VARCHAR(255),
-  `status` ENUM('active', 'inactive') DEFAULT 'inactive',
-  `role` ENUM('etudiant', 'enseignant', 'admin') DEFAULT 'etudiant'
+  `status` enum('active','suspended') DEFAULT 'active' ,
+  `role` ENUM('etudiant', 'enseignant','visiteur')DEFAULT 'visiteur'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-ALTER TABLE users 
-MODIFY role ENUM('etudiant', 'enseignant', 'admin') DEFAULT 'etudiant';
+ALTER TABLE `users` 
+	CHANGE `status` enum('active','suspensed') DEFAULT 'active' ;
+  ALTER TABLE users
+CHANGE status status ENUM('active', 'suspended') DEFAULT 'active';
+
+ALTER TABLE `users` 
+MODIFY role ENUM('etudiant', 'enseignant','visiteur')DEFAULT 'visiteur';
+
 
 DROP TABLE IF EXISTS `categories`;
 CREATE TABLE IF NOT EXISTS `categories` (
@@ -37,12 +43,16 @@ CREATE TABLE IF NOT EXISTS `tags` (
 DROP TABLE IF EXISTS `cours`;
 CREATE TABLE IF NOT EXISTS `cours` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `title` VARCHAR(200) NOT NULL,
-  `description` TEXT NOT NULL,
-  `contenu` TEXT NOT NULL,
-  `category_id` INT NOT NULL,
+  `title` VARCHAR(200),
+  `description` VARCHAR(255) ,
+   `content` TEXT,
+   `content_vedio` Varchar(255), 
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `status` ENUM('draft', 'published') DEFAULT 'draft',
+  `category_id` INT ,
+   `enseignant_id` INT ,
+     FOREIGN KEY (`enseignant_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
   FOREIGN KEY (`category_id`) REFERENCES `categories`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -57,14 +67,6 @@ CREATE TABLE IF NOT EXISTS `cours_tags` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
-DROP TABLE IF EXISTS `enseignant`;
-CREATE TABLE IF NOT EXISTS `enseignant` (
-  `enseignant_id` INT NOT NULL,
-  `cours_id` INT NOT NULL,
-  PRIMARY KEY (`enseignant_id`, `cours_id`),
-  FOREIGN KEY (`enseignant_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
-  FOREIGN KEY (`cours_id`) REFERENCES `cours`(`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 DROP TABLE IF EXISTS `etudiants`;
 CREATE TABLE IF NOT EXISTS `etudiants` (
@@ -84,3 +86,6 @@ CREATE TABLE IF NOT EXISTS `inscription` (
 
 
 
+SELECT * FROM users WHERE role = 'enseignant' AND status = 'suspended';
+
+SELECT * FROM users WHERE role = 'enseignant' AND status = 'suspended';
