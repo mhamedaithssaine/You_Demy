@@ -41,7 +41,13 @@ class Tag extends Crud {
         $result = $this->selectRecords($this->table, 'COUNT(*) as total');
         return $result[0]['total'];
     }
-
+      
+    public static function displayTags() {
+        $tags = self::selectRecords('tags');
+        foreach ($tags as $tag) {
+            echo htmlspecialchars($tag['name']) . "<br>";
+        }
+    }
      // Insertion en masse de tags pour gagner en efficacité.
 
     // public function insertTags(array $tags) {
