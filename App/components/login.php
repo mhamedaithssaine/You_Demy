@@ -1,3 +1,44 @@
+<?php
+
+require '../../vendor/autoload.php';
+use App\Models\User;
+
+$User = new User();
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $email = htmlspecialchars($_POST['email']);
+    $password = htmlspecialchars($_POST['password']);
+
+    if ($User->connecte($email, $password)) {
+
+      session_start();
+        $role =  $_SESSION['user_role'];
+        var_dump($role);
+        switch ($role) {
+            case 'admin':
+                header('Location: ../../index.php');
+                break;
+            case 'etudiant':
+                header('Location: ../../etudient.php');
+                break;
+            case 'enseignant':
+                header('Location: ../../enseignat.php');
+                break;
+            default:
+                header('Location: ../../visiteur.php');
+                break;
+        }
+        exit();
+    }  else {
+        $error = "Invalid email or password.";
+    }
+}
+
+?>
+
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,6 +52,9 @@
     <div class="bg-white p-8 rounded-xl border border-gray-200 shadow-lg w-full max-w-md">
         <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">Login</h2>
         <p class="text-sm text-gray-600 mb-6 text-center">Connectez-vous pour accéder à votre compte et profiter de toutes les fonctionnalités de Youdemy.</p>
+        <?php if (isset($error)): ?>
+            <p class="text-red-500 text-sm mb-4"><?php echo $error; ?></p>
+        <?php endif; ?>
         <form method="POST" action="login.php" class="space-y-4">
             <div>
                 <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
