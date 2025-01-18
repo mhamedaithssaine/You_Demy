@@ -31,6 +31,40 @@ use PDO;
        return $this->deleteRecord($this->table, $id);
    }
 
+   public function registre($data) {
+    $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
+    if ($data['role'] === 'enseignant') {
+        $data['status'] = 'suspended';
+    } else {
+        $data['status'] = 'active';
+    }
+    return $this->addusers($data);
+}
+      public function authenticate($email, $password) {
+            $user = $this->selectRecords($this->table, '*', 'email = ?', [$email]);
+            
+          if (!empty($user) && password_verify($password, $user[0]['password'])) {
+           return $user[0];
+         }
+            return false;
+        }
+    public function connecte($email, $password) {
+            $authenticatedUser = $this->authenticate($email, $password);
+            if ($authenticatedUser) {
+                session_start();
+                $_SESSION['user_id'] = $authenticatedUser['id'];
+                $_SESSION['user_role'] = $authenticatedUser['role'];
+                $_SESSION['user_name'] = $authenticatedUser['fullname'];
+                return true;
+            }
+            return false;
+        }
+     public function deconnecte() {
+            session_start();
+            session_unset();
+            session_destroy();
+        }
+
    public function activateUser($id){
     return $this->updateRecord($this->table,['status'=>'active'],$id);
    }
