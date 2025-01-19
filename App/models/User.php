@@ -5,10 +5,11 @@ use App\Models\Crud;
 use PDO;
  class User extends Crud {
  
-   private $table = 'users';
+   protected $table = 'users';
 
    public function __construct(){
        parent::__construct();
+     
    }
 
    public function selectAllusers(){
@@ -34,27 +35,53 @@ use PDO;
    public function registre($data) {
     $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
     if ($data['role'] === 'enseignant') {
-        $data['status'] = 'suspended';
-    } else {
-        $data['status'] = 'active';
-    }
+        $data['valide'] = 'Non valide';
+    } 
     return $this->addusers($data);
 }
       public function authenticate($email, $password) {
-            $user = $this->selectRecords($this->table, '*', 'email = ?', [$email]);
-            
-          if (!empty($user) && password_verify($password, $user[0]['password'])) {
-           return $user[0];
-         }
-            return false;
+            $users = $this->selectAllusers();
+
+            foreach($users as $user){
+                if ($user['email'] == $email && password_verify($password, $user['password'])){
+                    return $user;
+                }
+            }
+           return false;
         }
     public function connecte($email, $password) {
             $authenticatedUser = $this->authenticate($email, $password);
             if ($authenticatedUser) {
+
+                //Verifier validation par admin
+
+                if($authenticatedUser['role']== 'enseignant' && $authenticatedUser['status'] !== 'active' ){
+                    return false;
+                }
                 session_start();
                 $_SESSION['user_id'] = $authenticatedUser['id'];
                 $_SESSION['user_role'] = $authenticatedUser['role'];
                 $_SESSION['user_name'] = $authenticatedUser['fullname'];
+                $_SESSION['user_image'] = $authenticatedUser['profil_img_url'];
+                if($authenticatedUser['role']=="enseignant"){
+
+                    if($authenticatedUser['valide']=="Non valide"){
+  
+                          header('Location: ../components/login.php');
+                        exit();}
+                        if($authenticatedUser['status']=="suspended"){
+  
+                            header('Location: ../components/login.php');
+                          exit();}
+                        }
+                        if($authenticatedUser['role']=="etudiant"){
+
+                                if($authenticatedUser['status']=="suspended"){
+          
+                                    header('Location: ../components/login.php');
+                                  exit();}
+                                }
+
                 return true;
             }
             return false;
@@ -65,13 +92,6 @@ use PDO;
             session_destroy();
         }
 
-   public function activateUser($id){
-    return $this->updateRecord($this->table,['status'=>'active'],$id);
-   }
-   public function suspendUser($id){
-    return $this->updateRecord($this->table, ['status' => 'suspended'], $id);
-   }
-   
  }
 
 ?>
