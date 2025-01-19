@@ -1,5 +1,11 @@
 <?php 
 require 'vendor/autoload.php';
+session_start();
+if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
+    header('Location: enseignat.php');
+    exit();
+}
+
 
 use App\Models\Category;
 use App\Models\Student;
@@ -26,37 +32,14 @@ $totalTag = $tag->countTags();
 
 $categories = $category->selectAllCategory();
 $tags = $tag->selectAllTags();
+
+
 //si pour verifier les donnes recuperees
 $pendingEnseignants = $enseignant->getPendingEnseignants();
-// if (empty($pendingEnseignants)) {
-//     echo "<p>Aucun enseignant en attente de validation.</p>";
-// } else {
-//     echo "<pre>";
-//     print_r($pendingEnseignants);
-//     echo "</pre>";
-// }
 
 
 $users = $user->selectAllusers();
-if (isset($_GET['action']) && isset($_GET['id'])) {
-    $action = $_GET['action'];
-    $id = $_GET['id'];
 
-    switch ($action) {
-        case 'activate':
-            $user->activateUser($id);
-            break;
-        case 'suspended':
-            $user->suspendUser($id);
-            break;
-        case 'delete':
-            $user->deleteusers($id);
-            break;
-    }
-    header('Location: index.php' );
-
-    exit();
-}
 
 ?>
 
@@ -70,6 +53,7 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
  <style>
 
@@ -96,7 +80,10 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
       
         <aside class="w-64 bg-gray-800 text-white fixed h-full">
             <div class="p-4">
-                <h2 class="text-2xl font-semibold text-center mb-6">Administrateur</h2>
+                <h2 class="text-2xl font-semibold text-center mb-6"><div id="currentUser" class="flex items-center space-x-2">
+                                <span><?php echo $_SESSION['user_name']; ?></span>
+
+                            </h2><div>
                 <nav>
                     <ul class="space-y-2">
                         <li>
@@ -152,13 +139,20 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
                         </div>
                     </div>
                     <div class="flex items-center space-x-4">
-                        <div class="text-sm text-gray-600">
-                            <div id="currentUser">User: mhamedaithssaine</div>
-                            <div id="currentDateTime">2025-01-16 13:10:10 UTC</div>
+                    <div class="text-sm text-gray-600 flex items-center space-x-4">
+                          
+                            <a href="app/components/logout.php" class="flex items-center space-x-2 bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600">
+                                <i class="fas fa-sign-out-alt"></i>
+                                
+                            </a>
+                            <a href="profile.php" class="flex items-center space-x-2 bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600">
+                                <i class="fas fa-user"></i>
+                             
+                            </a>
+                            
                         </div>
-                        <img class="h-8 w-8 rounded-full" src="https://ui-avatars.com/api/?name=mhamedaithssaine" alt="Profile">
-                    </div>
                 </div>
+                
             </header>
 
             <!-- Main Content Area -->
@@ -196,7 +190,8 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
                         <th class="py-2 px-4 border-b">ID</th>
                         <th class="py-2 px-4 border-b">Nom</th>
                         <th class="py-2 px-4 border-b">Email</th>
-                        <th class="py-2 px-4 border-b">Statut</th>
+                        <th class="py-2 px-4 border-b">Role</th>
+                        <th class="py-2 px-4 border-b">Validation</th>
                         <th class="py-2 px-4 border-b">Actions</th>
                     </tr>
                 </thead>
@@ -207,12 +202,13 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
                             <td class="py-2 px-4 border-b"><?php echo $enseignantData['id']; ?></td>
                             <td class="py-2 px-4 border-b"><?php echo $enseignantData['fullname']; ?></td>
                             <td class="py-2 px-4 border-b"><?php echo $enseignantData['email']; ?></td>
-                            <td class="py-2 px-4 border-b"><?php echo $enseignantData['status']; ?></td>
+                            <td class="py-2 px-4 border-b"><?php echo $enseignantData['role']; ?></td>
+                            <td class="py-2 px-4 border-b"><?php echo $enseignantData['valide']; ?></td>
                             <td class="py-2 px-4 border-b">
-                                <a href="app/admin/manage_enseignants.php?action=validate&id=<?php echo $enseignantData['id']; ?>" class="text-green-500">
+                                <a href="app\admin\manage_enseignants.php?action=validate&id=<?php echo $enseignantData['id']; ?>" class="text-green-500">
                                     <i class="fas fa-check-circle"></i>
                                 </a>
-                                <a href="app/admin/manage_enseignants.php?action=reject&id=<?php echo $enseignantData['id']; ?>" class="text-red-500">
+                                <a href="app\admin\manage_enseignants.php?action=reject&id=<?php echo $enseignantData['id']; ?>" class="text-red-500">
                                     <i class="fas fa-times-circle"></i>
                                 </a>
                             </td>
@@ -240,6 +236,7 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
                                 <th class="py-2 px-4 border-b">ID</th>
                                 <th class="py-2 px-4 border-b">Name</th>
                                 <th class="py-2 px-4 border-b">Email</th>
+                                <th class="py-2 px-4 border-b">Role</th>
                                 <th class="py-2 px-4 border-b">Status</th>
                                 <th class="py-2 px-4 border-b">Actions</th>
                             </tr>
@@ -250,15 +247,16 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
                                     <td class="py-2 px-4 border-b"><?php echo $user['id']; ?></td>
                                     <td class="py-2 px-4 border-b"><?php echo $user['fullname']; ?></td>
                                     <td class="py-2 px-4 border-b"><?php echo $user['email']; ?></td>
+                                    <td class="py-2 px-4 border-b"><?php echo $user['role']; ?></td>
                                     <td class="py-2 px-4 border-b"><?php echo $user['status']; ?></td>
                                     <td class="py-2 px-4 border-b">
-                                    <a href="?action=activate&id=<?php echo $user['id']; ?>" class="text-green-500">
+                                    <a href="app/admin/manage_user.php?action=activate&id=<?php echo $user['id']; ?>" class="text-green-500">
                                             <i class="fas fa-check-circle"></i>
                                         </a>
-                                        <a href="?action=suspended&id=<?php echo $user['id']; ?>" class="text-yellow-500">
+                                        <a href="app/admin/manage_user.php?action=suspended&id=<?php echo $user['id']; ?>" class="text-yellow-500">
                                             <i class="fas fa-pause-circle"></i>
                                         </a>
-                                        <a href="?action=delete&id=<?php echo $user['id']; ?>" class="text-red-500">
+                                        <a href="app/admin/manage_user.php?action=delete&id=<?php echo $user['id']; ?>" class="text-red-500">
                                             <i class="fas fa-trash-alt"></i>
                                         
                                     </td>
@@ -432,5 +430,6 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
 
       
     </script>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </body>
 </html>
