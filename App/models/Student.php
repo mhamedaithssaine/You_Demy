@@ -1,7 +1,8 @@
 <?php
 namespace App\Models;
 
-
+use App\Models\User;
+use PDO;
 
 class Student extends User {
 
@@ -19,4 +20,5 @@ class Student extends User {
         return $result[0]['total_student'];
       }
 
+   
 }
