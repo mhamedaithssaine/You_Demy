@@ -17,17 +17,11 @@ class Enseignant extends User {
         return $result[0]['total_enseignant'];
       }
       public function getPendingEnseignants() {
-        return $this->selectRecords($this->table, '*', 'role="enseignant" AND status="suspended"');
+        return $this->selectRecords($this->table, '*', 'role="enseignant" AND valide="Non valide"');
 
-                  }
+      }
         
-            public function validateEnseignant(int  $id) {
-                return $this->updateRecord($this->table, ['status' => 'active'], $id);
-            }
-        
-            public function rejectEnseignant(int $id) {
-                return $this->updateRecord($this->table, ['role' => 'etudiant'], $id);
-            }
+           
 }
 
 
