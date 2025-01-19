@@ -4,35 +4,24 @@ require '../../vendor/autoload.php';
   $User = new User();
 
 if ($_SERVER["REQUEST_METHOD"]=="POST" ){
-    $fullname=htmlspecialchars($_POST['fullname']);
-    $email=htmlspecialchars($_POST['email']);
-    $phone=htmlspecialchars($_POST['phone']);
-    $password=htmlspecialchars($_POST['password']);
-    $bio=htmlspecialchars($_POST['bio']);
-    $profil_img_url=htmlspecialchars($_POST['profil_img_url']);
-    $role=htmlspecialchars($_POST['role']);
-    $password_hach = password_hash($password,PASSWORD_DEFAULT);
-    
-    if($role === 'enseignant'){
-        $status = 'suspensed';
-    }else {
-        $status = 'active';
-    }
-    $data = [
-        'fullname' => $fullname,
-        'email' => $email,
-        'phone' => $phone,
-        'password' => $password_hach,
-        'bio' => $bio,
-        'profil_img_url' => $profil_img_url,
-        'role' => $role,
-        'status' => $status
-    ];
+  
    
-    if($User->addusers($data)){
-        header('location: login.php');
+    $data = [
+        'fullname' => htmlspecialchars($_POST['fullname']),
+        'email' => htmlspecialchars($_POST['email']),
+        'phone' => htmlspecialchars($_POST['phone']),
+        'password' => htmlspecialchars($_POST['password']),
+        'bio' => htmlspecialchars($_POST['bio']),
+        'profil_img_url' => htmlspecialchars($_POST['profil_img_url']),
+        'role' => htmlspecialchars($_POST['role'])
+    ];
+
+
+    if($User->registre($data)){
+        header('Location: login.php');
         exit();
     }
+
     
 
 
