@@ -4,7 +4,10 @@ require '../../vendor/autoload.php';
 use App\Models\User;
 
 $User = new User();
+session_start();
 
+$role =  $_SESSION['user_role'];
+var_dump($role) ;
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = htmlspecialchars($_POST['email']);
     $password = htmlspecialchars($_POST['password']);
@@ -13,20 +16,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
       session_start();
         $role =  $_SESSION['user_role'];
-        var_dump($role);
-        switch ($role) {
-            case 'admin':
-                header('Location: ../../index.php');
-                break;
-            case 'etudiant':
-                header('Location: ../../etudient.php');
-                break;
-            case 'enseignant':
-                header('Location: ../../enseignat.php');
-                break;
-            default:
-                header('Location: ../../visiteur.php');
-                break;
+        echo $role;
+       
+        if ($role == 'admin') {
+            header('Location: ../../index.php');
+        } elseif ($role == 'etudiant') {
+            header('Location: ../../etudiant.php');
+        } elseif ($role == 'enseignant') {
+            header('Location: ../../enseignat.php');
+        } else {
+            header('Location: ../../visiteur.php');
         }
         exit();
     }  else {
