@@ -18,13 +18,25 @@ CREATE TABLE IF NOT EXISTS `users` (
   `role` ENUM('etudiant', 'enseignant','visiteur')DEFAULT 'visiteur'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+
+
 ALTER TABLE `users` 
 	CHANGE `status` enum('active','suspensed') DEFAULT 'active' ;
   ALTER TABLE users
 CHANGE status status ENUM('active', 'suspended') DEFAULT 'active';
 
+ALTER TABLE `users`
+MODIFY COLUMN role ENUM('etudiant', 'enseignant', 'admin','visiteur') DEFAULT 'visiteur';
 ALTER TABLE `users` 
 MODIFY role ENUM('etudiant', 'enseignant','visiteur')DEFAULT 'visiteur';
+ALTER TABLE `users` ADD valide ENUM('valide', 'Non valide') DEFAULT 'valide';
+ALTER TABLE `users` DROP COLUMN valide ;
+
+INSERT INTO `users` (`fullname`, `email`, `phone`, `password`, `bio`, `profil_img_url`, `status`, `role`)
+VALUES ('Admin', 'admin@example.com', '123-456-7890', '123', 'Admin biography', 'https://example.com/admin.jpg', 'active', 'admin');
+
+INSERT INTO `users` (`fullname`, `email`, `phone`, `password`, `bio`, `profil_img_url`, `status`, `role`)
+VALUES ('Admin', 'admin1@admin.com', '123-456-7890', '$2y$10$e0MYzXyjpJS7Pd0RVvHwHeFQx8W5v9e5a4y5Fq5Fq5Fq5Fq5Fq5Fq', 'Admin biography', 'https://example.com/admin.jpg', 'suspended', 'admin');
 
 
 DROP TABLE IF EXISTS `categories`;
@@ -51,8 +63,8 @@ CREATE TABLE IF NOT EXISTS `cours` (
    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `status` ENUM('draft', 'published') DEFAULT 'draft',
   `category_id` INT ,
-   `enseignant_id` INT ,
-     FOREIGN KEY (`enseignant_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
+  `enseignant_id` INT,
+    FOREIGN KEY (`enseignant_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
   FOREIGN KEY (`category_id`) REFERENCES `categories`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -68,13 +80,7 @@ CREATE TABLE IF NOT EXISTS `cours_tags` (
 
 
 
-DROP TABLE IF EXISTS `etudiants`;
-CREATE TABLE IF NOT EXISTS `etudiants` (
-  `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `user_id` INT NOT NULL,
-  `date_inscription` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 DROP TABLE IF EXISTS `inscription`;
 CREATE TABLE IF NOT EXISTS `inscription` (
   `etudiant_id` INT NOT NULL,
