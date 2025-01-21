@@ -2,7 +2,7 @@
 require '../../vendor/autoload.php';
 
 use App\Models\Cours;
-use App\Models\Student;
+// use App\Models\Student;
 
 session_start();
 
