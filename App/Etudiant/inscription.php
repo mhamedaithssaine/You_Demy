@@ -15,12 +15,13 @@ $student = new Cours();
 if (isset($_POST['cours_id'])) {
     $coursId = $_POST['cours_id'];
     $etudiantId = $_SESSION['user_id']; 
-
-    if ($student->inscrireEtudiant($etudiantId, $coursId)) {
-        header('Location: ../../etudiant.php?success=Inscription réussie');
+    $message = $student->inscrireEtudiant($etudiantId, $coursId);
+    if ($message === "Inscription réussie.") {
+        header('Location: ../../etudiant.php?success=' .urldecode($message));
     } else {
-        header('Location: ../../etudiant.php?error=Erreur lors de l\'inscription');
+        header('Location: ../../etudiant.php?error=' . urlencode($message));
     }
 } else {
     header('Location: ../../etudiant.php');
+    exit();
 }
