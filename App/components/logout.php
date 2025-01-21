@@ -5,6 +5,6 @@ use App\Models\User;
 $User = new User();
 $User->deconnecte();
 
-header('Location: login.php');
+header('Location: ../../visiteur.php');
 exit();
 ?>
