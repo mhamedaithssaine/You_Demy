@@ -17,7 +17,7 @@ if (isset($_POST['cours_id'])) {
     $etudiantId = $_SESSION['user_id']; 
 
     if ($student->deleteInscription($etudiantId, $coursId)) {
-        header('Location: ../../etudiant.php?success=Inscription  avec succès');
+        header('Location: ../../etudiant.php?success=Se desinscrire   avec succès');
     } else {
         header('Location: ../../etudiant.php?error=Erreur lors de l inscription');
     }
