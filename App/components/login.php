@@ -6,17 +6,18 @@ use App\Models\User;
 $User = new User();
 session_start();
 
-$role =  $_SESSION['user_role'];
-var_dump($role) ;
+
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = htmlspecialchars($_POST['email']);
+
     $password = htmlspecialchars($_POST['password']);
 
     if ($User->connecte($email, $password)) {
 
       session_start();
         $role =  $_SESSION['user_role'];
-        echo $role;
+        // echo $role;
        
         if ($role == 'admin') {
             header('Location: ../../index.php');
