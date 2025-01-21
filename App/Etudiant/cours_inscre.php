@@ -32,13 +32,14 @@ $courses = $student->getInscribedCourses($_SESSION['user_id']);
 <!-- Topbar -->
 <nav class="bg-white shadow">
     <div class="container mx-auto flex justify-between items-center p-4">
-        <a class="text-xl font-bold" href="#">Espace Étudiant</a>
+    <a class="text-xl font-bold" href="#">YOU_demy</a>
         <div class="flex-grow text-center py-4">
             <a class="text-blue-500 font-bold text-lg hover:underline" href="../../etudiant.php">Home</a>
         </div>
         <div class="flex items-center">
+        <a class="text-xl font-bold" href="#"><?php echo $_SESSION['user_name']; ?> <i class="fas fa-user mr-2">&nbsp;&nbsp;</i></a> 
             <form method="POST" action="../components/logout.php" style="display:inline;">
-                <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded">Déconnexion</button>
+                <button type="submit" class="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-red-600 dark:hover:bg-red-700 focus:outline-none dark:focus:ring-red-800">logout</button>
             </form>
         </div>
     </div>
@@ -59,11 +60,11 @@ $courses = $student->getInscribedCourses($_SESSION['user_id']);
                     <div class="mt-4">
                     
 
-                    <a href="cours_details.php?id=<?= $course['id'] ?>" class=" text-white text-center rounded px-4 py-3 bg-green-400 hover:bg-green-500">Voir les détails</a>
+                    <a href="cours_details.php?id=<?= $course['id'] ?>" class="text-white bg-green-500 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-green-600 dark:hover:bg-green-500 focus:outline-none dark:focus:ring-green-800">Voir les détails</a>
                         
                         <form method="POST" action="delet_inscription.php" class="inline-block">
                             <input type="hidden" name="cours_id" value="<?= $course['id'] ?>">
-                            <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Se désinscrire</button>
+                            <button type="submit" class="text-white bg-red-500 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-red-600 dark:hover:bg-red-500 focus:outline-none dark:focus:ring-red-800">Se désinscrire</button>
                         </form>
                     </div>
                 </div>
