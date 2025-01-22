@@ -12,9 +12,25 @@ class Cours extends Crud {
         parent::__construct();
     }
 
-    public function selectAllCours($table) {
+    public function selectAllCours() {
         return $this->selectRecords($this->table);
     }
+    
+  public function selectAllCoursEnsiengant(){
+            $sql = "SELECT cours.*, categories.name  as category_name,  GROUP_CONCAT(tags.name SEPARATOR ', ') as tag_names, users.fullname AS enseignant_name
+            FROM cours 
+            JOIN categories ON cours.category_id = categories.id
+            JOIN cours_tags ON cours.id = cours_tags.cours_id
+            JOIN tags ON cours_tags.tag_id = tags.id
+            JOIN users ON cours.enseignant_id = users.id
+            WHERE users.role = 'enseignant'
+            GROUP BY cours.id,categories.name, users.fullname";
+            $stmt = parent::$conn->prepare($sql);
+            $stmt->execute();
+
+            $courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return $courses;
+  }
 
     public function selectCours($id) {
         return $this->selectRecords($this->table, '*', 'id = ' . $id);
@@ -32,19 +48,22 @@ class Cours extends Crud {
         return $this->deleteRecord($this->table, $id);
     }
 
-    public function countCours() {
-        $result = $this->selectRecords($this->table, 'COUNT(*) as total');
-        return $result[0]['total'];
+    public function publeshedCours(int  $id) {
+        return $this->updateRecord($this->table, ['status' => 'published'], $id);
     }
 
+    public function draftCours(int $id) {
+        return $this->updateRecord($this->table, ['status' => 'draft'], $id);
+    }
    
     public function getCoursesByUserId($userId) {
-        $sql = "SELECT cours.*, categories.name as category_name
-                FROM cours
+        $sql = "SELECT cours.*, categories.name  as category_name,  GROUP_CONCAT(tags.name SEPARATOR ', ') as tag_names
+                FROM cours 
                 JOIN categories ON cours.category_id = categories.id
-                -- LEFT JOIN cours_tags ON cours.id = cours_tags.cours_id
-                -- LEFT JOIN tags ON cours_tags.tag_id = tags.id
-                WHERE cours.enseignant_id = :userId";
+                JOIN cours_tags ON cours.id = cours_tags.cours_id
+                JOIN tags ON cours_tags.tag_id = tags.id
+                WHERE cours.enseignant_id = :userId
+                GROUP BY cours.id";
     
         $stmt = parent::$conn->prepare($sql);
         $stmt->bindParam(':userId', $userId, PDO::PARAM_INT);
@@ -55,35 +74,22 @@ class Cours extends Crud {
     }
 
 
- 
-
     public static function addTag($coursId, $tagId) {
         return parent::insertRecord('cours_tags', ['cours_id' => $coursId, 'tag_id' => $tagId]);
     }
 
    
-
     public function getCourseTags($coursId) {
-        // $sql = "SELECT tags.name as name
-        //         FROM cours_tags
-        //         JOIN tags ON cours_tags.tag_id = tags.id
-        //         WHERE cours_tags.cours_id = :coursId";
-    
-        // $stmt = parent::$conn->prepare($sql);
-        // $stmt->bindParam(':coursId', $coursId, PDO::PARAM_INT);
-        // $stmt->execute();
-    
-        // $tags = $stmt->fetchAll(PDO::FETCH_COLUMN);
-        // return  $tags;
+       
         $sql = "SELECT  t.name 
             FROM tags t 
             JOIN cours_tags ct ON t.id = ct.tag_id 
             WHERE ct.cours_id = ?";
     
-    $stmt = self::$conn->prepare($sql);
-    $stmt->execute([$coursId]);
-    
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $stmt = self::$conn->prepare($sql);
+            $stmt->execute([$coursId]);
+            
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     
@@ -94,45 +100,75 @@ class Cours extends Crud {
         return $stmt->execute();
     }
      
-    public function getCoursesWithPagination($limit, $offset) {
-        $sql = "SELECT cours.*, categories.name as category_name
-                FROM cours
-                JOIN categories ON cours.category_id = categories.id
-                LIMIT :limit OFFSET :offset";
 
-        $stmt = parent::$conn->prepare($sql);
-        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
-        $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
-        $stmt->execute();
+    public function getCoursesWithPagination() {
+        $sql = "SELECT cours.*, categories.name as category_name, GROUP_CONCAT(tags.name SEPARATOR ', ') as tag_names, users.fullname AS enseignant_name
+        FROM cours 
+        JOIN categories ON cours.category_id = categories.id
+        JOIN cours_tags ON cours.id = cours_tags.cours_id
+        JOIN tags ON cours_tags.tag_id = tags.id
+        JOIN users ON cours.enseignant_id = users.id
+        WHERE cours.status = 'published'
+        GROUP BY cours.id, categories.name, users.fullname";
+      
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+                $stmt = parent::$conn->prepare($sql);
+              
+                $stmt->execute();
+
+                return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+
     public function countAllCourses() {
         $result = $this->selectRecords($this->table, 'COUNT(*) as total');
         return $result[0]['total'];
     }
-    public function searchCourses($keyword) {
-        $sql = "SELECT cours.*, categories.name as category_name
-                FROM cours
-                JOIN categories ON cours.category_id = categories.id
-                WHERE cours.title LIKE :keyword OR cours.description LIKE :keyword";
 
+  // pour chercher un cours par title 
+    public function searchCourses($searchTerm) {
+           $sql = "SELECT cours.*, categories.name as category_name, GROUP_CONCAT(tags.name SEPARATOR ', ') as tag_names, users.fullname AS enseignant_name
+        FROM cours 
+        JOIN categories ON cours.category_id = categories.id
+        JOIN cours_tags ON cours.id = cours_tags.cours_id
+        JOIN tags ON cours_tags.tag_id = tags.id
+        JOIN users ON cours.enseignant_id = users.id
+        WHERE cours.status = 'published' AND  title LIKE :searchTerm OR categories.name LIKE :searchTerm OR tags.name LIKE :searchTerm OR users.fullname  LIKE :searchTerm
+        GROUP BY cours.id, categories.name, users.fullname";
         $stmt = parent::$conn->prepare($sql);
-        $keyword = "%$keyword%"; 
-        $stmt->bindParam(':keyword', $keyword, PDO::PARAM_STR);
-        $stmt->execute();
-
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt->execute(['searchTerm' => '%' . $searchTerm . '%']);
+        return  $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+// pour verifier l'inscription 
 
+    public function isAlreadyInscribed($etudiantId, $coursId) {
+        $sql = "SELECT COUNT(*) as count FROM inscription WHERE etudiant_id = :etudiantId AND cours_id = :coursId";
+        $stmt = parent::$conn->prepare($sql);
+        $stmt->bindParam(':etudiantId', $etudiantId, PDO::PARAM_INT);
+        $stmt->bindParam(':coursId', $coursId, PDO::PARAM_INT);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['count'] > 0;
+    }
+
+    // pour faire l'inscription de cours 
     public function inscrireEtudiant($etudiantId, $coursId) {
+        if ($this->isAlreadyInscribed($etudiantId, $coursId)) {
+
+            return "Vous êtes déjà inscrit à ce cours.";
+        }
         $sql = "INSERT INTO inscription (etudiant_id, cours_id) VALUES (:etudiantId, :coursId)";
         $stmt = parent::$conn->prepare($sql);
         $stmt->bindParam(':etudiantId', $etudiantId, PDO::PARAM_INT);
         $stmt->bindParam(':coursId', $coursId, PDO::PARAM_INT);
-        return $stmt->execute();
+        if  ($stmt->execute()){
+            return "Inscription réussie.";
+        }else {
+            return "Erreur lors de l'inscription.";
+        }
     }
+
 
     public function getInscribedCourses($etudiantId) {
         $sql = "SELECT cours.*, categories.name as category_name 
@@ -149,13 +185,14 @@ class Cours extends Crud {
     }
 
     public function deleteInscription($etudiantId, $coursId) {
-        $sql = "DELETE FROM inscription WHERE etudiant_id = :etudiantId AND cours_id = :coursId";
-        $stmt = parent::$conn->prepare($sql);
-        $stmt->bindParam(':etudiantId', $etudiantId, PDO::PARAM_INT);
-        $stmt->bindParam(':coursId', $coursId, PDO::PARAM_INT);
-        return $stmt->execute();
+            $sql = "DELETE FROM inscription WHERE etudiant_id = :etudiantId AND cours_id = :coursId";
+            $stmt = parent::$conn->prepare($sql);
+            $stmt->bindParam(':etudiantId', $etudiantId, PDO::PARAM_INT);
+            $stmt->bindParam(':coursId', $coursId, PDO::PARAM_INT);
+            return $stmt->execute();
     }
 
+   
 }
 
 

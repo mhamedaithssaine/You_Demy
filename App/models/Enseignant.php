@@ -7,6 +7,7 @@ class Enseignant extends User {
 
     protected $table = 'users';
     public function __construct(){
+  
     }
 
     public function getRole(){

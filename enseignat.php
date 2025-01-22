@@ -4,14 +4,16 @@ require 'vendor/autoload.php';
 // pour fixe le role de user 
 session_start();
 if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'enseignant') {
-    header('Location: enseignat.php');
+    header('Location: app/components/login.php');
     exit();
 }
+
 
 
 use App\Models\Cours;
 use App\Models\Category;
 use App\Models\Tag;
+use App\Models\Admin;
 
 if (!isset($_SESSION['user_id'])) {
     header('Location: login.php');
@@ -21,12 +23,10 @@ $userId = $_SESSION['user_id'];
 
 $cours = new Cours();
 $courses = $cours->getCoursesByUserId($userId);
-foreach ($courses as &$course) {
-    $course['tag_names'] = $cours->getCourseTags($course['id']);
-   
-    // print_r($course);
-   
-}
+
+
+
+
 
 $categoryModel = new Category();
 $categories = $categoryModel->selectAllCategory();
@@ -34,6 +34,33 @@ $categories = $categoryModel->selectAllCategory();
 $tagModel = new Tag();
 $tags = $tagModel->selectAllTags();
 
+
+
+// pour les statistique 
+$admin = new Admin;   
+$generalStats=$admin->getGeneralStats();
+
+$statsData = json_encode([
+    'labels' => ['Total Enseignants', 'Total Etutiants', 'Active Courses', 'Suspende Courses', 'Total Categories'],
+    'datasets' => [[
+        'label' => 'General Statistics',
+        'data' => [
+            $generalStats['total_teachers'],
+            $generalStats['total_students'],
+            $generalStats['active_courses'],
+            $generalStats['pending_courses'],
+            $generalStats['total_categories']
+        ],
+        'backgroundColor' => [
+            'rgba(54, 162, 235, 1)', 
+            'rgba(255, 206, 86, 1)', 
+            'rgba(75, 192, 192, 1)', 
+            'rgba(153, 102, 255, 1)', 
+            'rgba(255, 159, 64, 1)' 
+        ],
+        'borderWidth' => 1
+    ]]
+]);
 ?>
 
 
@@ -46,6 +73,8 @@ $tags = $tagModel->selectAllTags();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
  <style>
 
@@ -57,11 +86,12 @@ $tags = $tagModel->selectAllTags();
       
         <aside class="w-64 bg-gray-800 text-white fixed h-full">
             <div class="p-4">
-            <div class="p-4">
-                <h2 class="text-2xl font-semibold text-center mb-6"><div id="currentUser" class="flex items-center space-x-2">
-                                <span><?php echo $_SESSION['user_name']; ?></span>
+            
+                  <h2 class="text-2xl font-semibold text-center mb-6"><div id="currentUser" class="flex items-center space-x-2">
+                                <span>You_demy</span>
 
                             </h2>
+                            <div>
                 <nav>
                     <ul class="space-y-2">
                         <li>
@@ -80,11 +110,7 @@ $tags = $tagModel->selectAllTags();
                                 Gestion des contenus
                             </a>
                         </li>
-                        <li>
-                            <a href="#" class="nav-link block px-4 py-2 rounded hover:bg-gray-700 transition" data-section="stats">
-                                Statistiques Globales
-                            </a>
-                        </li>
+                    
                     </ul>
                 </nav>
             </div>
@@ -122,43 +148,36 @@ $tags = $tagModel->selectAllTags();
                               <i class="fas fa-user"></i>
                            
                           </a>
-                          
+                          <h2 class="text-2xl font-semibold text-center mb-2"><div id="currentUser" class="flex items-center space-x-2">
+                                <span><?php echo $_SESSION['user_name']; ?></span>
+
+                            </h2><div>
                       </div>
                 </div>
+                
             </header>
 
             <!-- Main Content Area -->
             <main class="p-6">
-                <!-- Home Section (Statistics Overview) -->
-                <section id="home" class="section active">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-                        <div class="bg-white rounded-lg shadow p-6">
-                            <div class="text-gray-500 text-sm">Total Students inscre</div>
-                            <div class="text-2xl font-bold"><?php?></div>
-                        </div>
-                        <div class="bg-white rounded-lg shadow p-6">
-                            <div class="text-gray-500 text-sm">Total cours</div>
-                            <div class="text-2xl font-bold"><?php  ?></div>
-                        </div>
-                        <div class="bg-white rounded-lg shadow p-6">
-                            <div class="text-gray-500 text-sm">Tags</div>
-                            <div class="text-2xl font-bold"><?php ?></div>
-                        </div>
-                        <div class="bg-white rounded-lg shadow p-6">
-                            <div class="text-gray-500 text-sm">Categories</div>
-                            <div class="text-2xl font-bold"><?php ?></div>
-                        </div>
-                    </div>
+            <section id="home" class="section active">
+                   
                     <!-- Additional Statistics Charts could go here -->
+
+                    <div style="width: 50%; margin: auto;">
+                    <canvas id="statsChart" width="400" height="400"></canvas>
+                </div>
                 </section>
+                
+                </section>
+           
 
                 <!-- Other sections (initially hidden) -->
-    <section id="validation" class="section hidden">
-            <!-- filepath: /c:/laragon/www/You_Demy/enseignat.php -->
+                     <section id="validation" class="section hidden">
+            
 <!-- add content -->
 <div class="card">
     <div class="card-header">
-        <h1>Ajouter un cours</h1>
+    <h2 class="text-xl font-semibold mb-4">Ajouter Cours </h2>
     </div>
     <div class="card-body p-6 bg-white rounded-lg shadow-md">
         <form method="post" action="app/Enseignant/manager_cours.php">
@@ -221,7 +240,9 @@ $tags = $tagModel->selectAllTags();
 </div>
     </section>
 
-    <section id="content" class="section hidden">
+
+
+<section id="content" class="section hidden">
     <!-- Content management -->
     <h2 class="text-xl font-semibold mb-4">Les cours</h2>
     <div class="card shadow mb-4 bg-white rounded-lg shadow-md">
@@ -241,43 +262,43 @@ $tags = $tagModel->selectAllTags();
                     </thead>
                     <tbody>
                         <?php if (isset($courses) && !empty($courses)): ?>
-                            <?php foreach ($courses as $course): ?>
+                            <?php foreach ($courses as $cour): ?>
                                 <tr>
                                     <td class="px-4 py-2">
-                                        <?= htmlspecialchars($course['title']) ?>
+                                        <?= htmlspecialchars($cour['title']) ?>
                                     </td>
                                     <td class="px-4 py-2">
-                                        <?= htmlspecialchars($course['category_name']) ?>
+                                        <?= htmlspecialchars($cour['category_name']) ?>
                                     </td>
                                     <td class="px-4 py-2">
-                                        <?= !empty($course['content_vedio']) ? 'Video' : 'Document' ?>
+                                        <?= !empty($cour['content_vedio']) ? 'Video' : 'Document' ?>
                                     </td>
                                     <td class="px-4 py-2">
                                         <?php
-                                        if ($course['tag_names']) {
-                                            $tagses = explode(',', $course['tag_names']);
-                                            foreach ($tagses as $tag) {
-                                                echo '<span class="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded">' . htmlspecialchars($tag) . '</span>';
+                                        $tags = $cours->getCourseTags($cour['id']);
+                                        if (!empty($tags)) {
+                                            foreach ($tags as $tag) {
+                                                echo '<span class="bg-blue-200 text-blue-800 text-sm px-2 py-1 rounded-full mr-2 mb-2">' . htmlspecialchars($tag['name']) . '</span>';
                                             }
                                         } else {
-                                            echo 'No tags';
+                                            echo '<p class="text-gray-500 mt-2">Aucun tag pour ce cours.</p>';
                                         }
                                         ?>
                                     </td>
                                     <td class="px-4 py-2">
-                                        <?= date('M d, Y H:i', strtotime($course['created_at'])) ?>
+                                        <?= date('M d, Y H:i', strtotime($cour['created_at'])) ?>
                                     </td>
                                     <td class="px-4 py-2">
-                                        <?= htmlspecialchars($course['status']) ?>
+                                        <?= htmlspecialchars($cour['status']) ?>
                                     </td>
                                     <td class="px-4 py-2">
-                                        <a href="app/Enseignant/update_cours.php?id=<?= $course['id'] ?>" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                                            <i class="fas fa-edit"></i> Update
+                                        <a href="app/Enseignant/update_cours.php?id=<?= $cour['id'] ?>" class="">
+                                            <i class="fas fa-edit bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"></i> 
                                         </a>
                                         <form method="post" action="app/Enseignant/delet_cours.php" style="display:inline;">
-                                            <input type="hidden" name="id" value="<?= $course['id'] ?>">
-                                            <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
-                                                <i class="fas fa-trash"></i> Delete
+                                            <input type="hidden" name="id" value="<?= $cour['id'] ?>">
+                                            <button type="submit" class="">
+                                                <i class="fas fa-trash bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"></i> 
                                             </button>
                                         </form>
                                     </td>
@@ -355,6 +376,23 @@ $tags = $tagModel->selectAllTags();
         documentDiv.style.display = 'none';
     }
 });
+
+
+        const ctx = document.getElementById('statsChart').getContext('2d');
+        const statsData = <?php echo $statsData; ?>;
+        const statsChart = new Chart(ctx, {
+            type: 'pie',
+            data: statsData,
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    }
+                }
+            }
+        });
+        
 
       
     </script>
