@@ -7,6 +7,7 @@ use PDO;
  
    protected $table = 'users';
 
+
    public function __construct(){
        parent::__construct();
      

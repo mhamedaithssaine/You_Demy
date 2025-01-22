@@ -11,9 +11,7 @@ class Student extends User {
        
     }
   
-      public function getRole(){
-        return 'etudiants';
-      }
+      
      
       public function countStudents(){
         $result = $this->selectRecords($this->table,'COUNT(*) as total_student','role="etudiant"');
